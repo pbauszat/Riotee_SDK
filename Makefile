@@ -37,8 +37,13 @@ SDK_SRC_FILES += \
 
 
 OBJS = $(addprefix $(OUTPUT_DIR)/, $(addsuffix .o, $(SRC_FILES))) 
-OBJS += $(subst $(RIOTEE_SDK_ROOT)/,$(OUTPUT_DIR)/, $(addsuffix .o, $(SDK_SRC_FILES)))
-
+ifdef SHARED_SRC_FILES
+  ifndef SHARED_ROOT_SRC
+    $(error SHARED_ROOT_SRC is not set)
+  endif
+  OBJS += $(subst $(SHARED_ROOT_SRC)/, $(OUTPUT_DIR)/shared/, $(addsuffix .o, $(SHARED_SRC_FILES)))
+endif
+OBJS += $(subst $(RIOTEE_SDK_ROOT)/, $(OUTPUT_DIR)/, $(addsuffix .o, $(SDK_SRC_FILES)))
 
 # Include folders common to all targets
 INC_DIRS += \
@@ -114,6 +119,18 @@ ${OUTPUT_DIR}/%.c.o: ${RIOTEE_SDK_ROOT}/%.c
 	@${PREFIX}gcc ${CFLAGS} -c $< -o $@
 	@echo "CC $<"
 
+ifdef SHARED_ROOT_SRC
+${OUTPUT_DIR}/shared/%.c.o: ${SHARED_ROOT_SRC}/%.c
+	@mkdir -p $(@D)
+	@${PREFIX}gcc ${CFLAGS} -c $< -o $@
+	@echo "CC $<"
+
+${OUTPUT_DIR}/shared/%.cpp.o: ${SHARED_ROOT_SRC}/%.cpp
+	@mkdir -p $(@D)
+	@${PREFIX}c++ ${CPPFLAGS} -c $< -o $@
+	@echo "CC $<"
+endif
+
 ${OUTPUT_DIR}/%.c.o: ${PRJ_ROOT}/%.c
 	@mkdir -p $(@D)
 	@${PREFIX}gcc ${CFLAGS} -c $< -o $@
@@ -127,7 +144,6 @@ ${OUTPUT_DIR}/%.cpp.o: ${PRJ_ROOT}/%.cpp
 ${OUTPUT_DIR}/build.elf: $(OBJS)
 	@${PREFIX}c++ ${LDFLAGS} $(OBJS) -o $@ ${LIB_FILES}
 	@${PREFIX}size $@
-
 
 ${OUTPUT_DIR}/build.hex: ${OUTPUT_DIR}/build.elf
 	@echo "Preparing $@"
