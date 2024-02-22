@@ -15,7 +15,9 @@ typedef enum {
   /* Packet received, but CRC check failed */
   RADIO_EVT_CRCERR,
   /* An address has been decoded */
-  RADIO_EVT_ADDRESS
+  RADIO_EVT_ADDRESS,
+  /* Rx/Tx ended */
+  RADIO_EVT_END,
 } radio_evt_t;
 
 /**

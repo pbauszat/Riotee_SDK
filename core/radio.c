@@ -9,6 +9,7 @@ RADIO_CALLBACK cb_rxready = NULL;
 RADIO_CALLBACK cb_crcok = NULL;
 RADIO_CALLBACK cb_crcerr = NULL;
 RADIO_CALLBACK cb_address = NULL;
+RADIO_CALLBACK cb_end = NULL;
 
 void radio_init() {
   NRF_PPI->CH[18].EEP = (uint32_t)&NRF_CLOCK->EVENTS_HFCLKSTARTED;
@@ -58,6 +59,11 @@ int radio_cb_register(radio_evt_t evt, RADIO_CALLBACK cb) {
       NRF_RADIO->EVENTS_ADDRESS = 0;
       NRF_RADIO->INTENSET = RADIO_INTENSET_ADDRESS_Msk;
       break;
+    case RADIO_EVT_END:
+      cb_end = cb;
+      NRF_RADIO->EVENTS_END = 0;
+      NRF_RADIO->INTENSET = RADIO_INTENSET_END_Msk;
+      break;
     default:
       return -1;
   }
@@ -89,6 +95,10 @@ int radio_cb_unregister(radio_evt_t evt) {
     case RADIO_EVT_ADDRESS:
       cb_address = NULL;
       NRF_RADIO->INTENCLR = RADIO_INTENCLR_ADDRESS_Msk;
+      break;
+    case RADIO_EVT_END:
+      cb_end = NULL;
+      NRF_RADIO->INTENCLR = RADIO_INTENCLR_END_Msk;
       break;
     default:
       return -1;
@@ -126,5 +136,10 @@ void RADIO_IRQHandler(void) {
     NRF_RADIO->EVENTS_ADDRESS = 0;
     if (cb_address != NULL)
       cb_address();
+  }
+  if (NRF_RADIO->EVENTS_END == 1) {
+    NRF_RADIO->EVENTS_END = 0;
+    if (cb_end != NULL)
+      cb_end();
   }
 }
