@@ -45,6 +45,9 @@ Our Riotee Board combines a Riotee Module with a USB Type-C connector and circui
 | SbwClk     | TI Spy-bi-wire (SBW) Clock for programming MSP430FR.                                |
 | SbwIO      | TI Spy-bi-wire (SBW) I/O for programming MSP430FR.                                  |
 
+## Voltage and current ratings
+
+For voltage and current ratings of individual pins please refer to [the module documentation](module_pad_ratings).
 ## Button
 
 The Board has a push button connected to pin D6 that is pulled high with a 1M resistor.
@@ -64,6 +67,8 @@ Use your favorite terminal application (e.g. minicom on Linux or putty on Window
 The default baudrate of the UART driver is 1000000bps, but this can be changed via the API.
 
 ## Programming
+
+The Riotee Board embeds a {doc}`/hardware/probe` that allows programming and debugging software running on the Riotee Module.
 
 Install the `riotee-probe` Python package with
 
@@ -105,6 +110,10 @@ riotee-probe target-power --off
 Connect a jumper wire from one of the ground pins to the pad labelled 'USB_BOOT' on the bottom of the board, while plugging in the USB cable.
 A removable storage drive should appear on your PC.
 Download the latest firmware (*probe_riotee_board_[version].uf2*) from the [release page](https://github.com/NessieCircuits/Riotee_ProbeSoftware/releases/latest) and drop it into the drive.
+
+## Debugging
+
+Refer to the Refer to the {doc}`/debugging` section.
 
 ## Resources
  - [Schematics](https://www.riotee.nessie-circuits.de/artifacts/board/latest/schematics.pdf)
