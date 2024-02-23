@@ -15,6 +15,7 @@ SDK_SRC_FILES += \
   $(CORE_DIR)/thresholds.c \
   $(CORE_DIR)/printf.c \
   $(CORE_DIR)/radio.c \
+  $(CORE_DIR)/timer.c \
   $(CORE_DIR)/ble.c \
   $(CORE_DIR)/i2c.c \
   $(CORE_DIR)/max20361.c \

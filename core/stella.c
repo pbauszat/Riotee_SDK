@@ -6,6 +6,7 @@
 #include "riotee_stella.h"
 #include "radio.h"
 #include "runtime.h"
+#include "timer.h"
 
 static riotee_stella_pkt_t _rx_pkt_buf __attribute__((section(".retained_bss")));
 static riotee_stella_pkt_t _tx_pkt_buf __attribute__((section(".retained_bss")));
@@ -61,7 +62,7 @@ static void radio_crc_err(void) {
 /* Address received */
 static void radio_address(void) {
   /* Stop the timeout timer */
-  NRF_TIMER2->TASKS_STOP = 1;
+  timer_stop(TIMER_2);
   radio_cb_unregister(RADIO_EVT_ADDRESS);
 }
 
@@ -76,21 +77,18 @@ static void radio_rxready(void) {
 
   /* Notify us when an address is received */
   radio_cb_register(RADIO_EVT_ADDRESS, radio_address);
-  /* Set a timeout for reception of an address */
-  NRF_TIMER2->TASKS_CLEAR = 1;
-  NRF_TIMER2->TASKS_START = 1;
+  /* Set a timeout of 100us for reception of an address */
+  timer_start_us(TIMER_2, 100);
 }
 
-/* Initializes a timer used for timing out reception of an acknowledgment */
-static int timer_init(void) {
-  /* 1us period */
-  NRF_TIMER2->PRESCALER = 4;
-  /* 100us timeout for receiving the address of the acknowledgment */
-  NRF_TIMER2->CC[0] = 100;
-  NRF_TIMER2->INTENSET |= TIMER_INTENSET_COMPARE0_Msk;
-  NRF_TIMER2->SHORTS |= TIMER_SHORTS_COMPARE0_STOP_Msk;
-  NVIC_EnableIRQ(TIMER2_IRQn);
-  return 0;
+/* Timeout for reception of the acknowledgment */
+static void timer_callback() {
+  radio_cb_unregister(RADIO_EVT_ADDRESS);
+  radio_stop();
+  stella_teardown_ptr = NULL;
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  xTaskNotifyIndexedFromISR(usr_task_handle, 1, EVT_STELLA_TIMEOUT, eSetBits, &xHigherPriorityTaskWoken);
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void riotee_stella_init() {
@@ -135,6 +133,7 @@ void riotee_stella_init() {
 
   radio_init();
   timer_init();
+  timer_cb_register(TIMER_2, timer_callback);
 
   radio_cb_register(RADIO_EVT_CRCOK, radio_crc_ok);
   radio_cb_register(RADIO_EVT_CRCERR, radio_crc_err);
@@ -144,25 +143,10 @@ void riotee_stella_init() {
   NRF_PPI->CHENSET = PPI_CHENSET_CH18_Msk;
 }
 
-/* Timeout for reception of the acknowledgment */
-void TIMER2_IRQHandler(void) {
-  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-
-  if (NRF_TIMER2->EVENTS_COMPARE[0] == 1) {
-    NRF_TIMER2->EVENTS_COMPARE[0] = 0;
-    radio_cb_unregister(RADIO_EVT_ADDRESS);
-    radio_stop();
-    stella_teardown_ptr = NULL;
-
-    xTaskNotifyIndexedFromISR(usr_task_handle, 1, EVT_STELLA_TIMEOUT, eSetBits, &xHigherPriorityTaskWoken);
-  }
-  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-}
-
 static void teardown(void) {
   radio_stop();
   radio_cb_unregister(RADIO_EVT_ADDRESS);
-  NRF_TIMER2->TASKS_STOP = 1;
+  timer_stop(TIMER_2);
   xTaskNotifyIndexed(usr_task_handle, 1, EVT_TEARDOWN, eSetBits);
   stella_teardown_ptr = NULL;
 }
