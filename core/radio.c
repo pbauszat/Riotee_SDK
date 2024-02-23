@@ -11,9 +11,14 @@ RADIO_CALLBACK cb_crcerr = NULL;
 RADIO_CALLBACK cb_address = NULL;
 RADIO_CALLBACK cb_end = NULL;
 
-void radio_init() {
+void radio_init(radio_init_mode_t mode) {
   NRF_PPI->CH[18].EEP = (uint32_t)&NRF_CLOCK->EVENTS_HFCLKSTARTED;
-  NRF_PPI->CH[18].TEP = (uint32_t)&NRF_RADIO->TASKS_TXEN;
+  if (mode == RADIO_INIT_MODE_RX) {
+    NRF_PPI->CH[18].TEP = (uint32_t)&NRF_RADIO->TASKS_RXEN;
+  } else {
+    // TX by default
+    NRF_PPI->CH[18].TEP = (uint32_t)&NRF_RADIO->TASKS_TXEN;
+  }
 
   NVIC_EnableIRQ(RADIO_IRQn);
 }

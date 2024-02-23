@@ -20,6 +20,13 @@ typedef enum {
   RADIO_EVT_END,
 } radio_evt_t;
 
+typedef enum {
+  /* Radio starts in TX mode */
+  RADIO_INIT_MODE_TX,
+  /* Radio starts in RX mode */
+  RADIO_INIT_MODE_RX,
+} radio_init_mode_t;
+
 /**
  * @brief Registers a callback in the radio isr.
  *
@@ -40,8 +47,9 @@ int radio_cb_unregister(radio_evt_t evt);
 /**
  * @brief Initializes the radio peripheral. Must be called before radio can be used.
  *
+ * @param mode The initial radio mode.
  */
-void radio_init();
+void radio_init(radio_init_mode_t mode);
 
 /**
  * @brief Starts the radio by starting the HFXO, which automatically starts the radio when its up.

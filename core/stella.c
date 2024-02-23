@@ -131,7 +131,7 @@ void riotee_stella_init() {
   /* Set the default device ID */
   riotee_stella_set_id(NRF_FICR->DEVICEADDR[0]);
 
-  radio_init();
+  radio_init(RADIO_INIT_MODE_TX);
   timer_init();
   timer_cb_register(TIMER_2, timer_callback);
 

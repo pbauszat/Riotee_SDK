@@ -195,7 +195,7 @@ void riotee_ble_init(void) {
 
   radio_cb_register(RADIO_EVT_DISABLED, radio_disabled_callback);
 
-  radio_init();
+  radio_init(RADIO_INIT_MODE_TX);
 
   /* This channel starts radio transmissions as soon as HFCLK is running*/
   NRF_PPI->CHENSET = PPI_CHEN_CH18_Msk;
