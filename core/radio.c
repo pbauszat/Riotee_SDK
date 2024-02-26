@@ -112,37 +112,37 @@ int radio_cb_unregister(radio_evt_t evt) {
 }
 
 void RADIO_IRQHandler(void) {
-  if (NRF_RADIO->EVENTS_DISABLED == 1) {
+  if ((NRF_RADIO->EVENTS_DISABLED == 1) && (NRF_RADIO->INTENSET & RADIO_INTENSET_DISABLED_Msk)) {
     NRF_RADIO->EVENTS_DISABLED = 0;
     if (cb_disabled != NULL)
       cb_disabled();
   }
-  if (NRF_RADIO->EVENTS_RXREADY == 1) {
+  if ((NRF_RADIO->EVENTS_RXREADY == 1) && (NRF_RADIO->INTENSET & RADIO_INTENSET_RXREADY_Msk)) {
     NRF_RADIO->EVENTS_RXREADY = 0;
     if (cb_rxready != NULL)
       cb_rxready();
   }
-  if (NRF_RADIO->EVENTS_TXREADY == 1) {
+  if ((NRF_RADIO->EVENTS_TXREADY == 1) && (NRF_RADIO->INTENSET & RADIO_INTENSET_TXREADY_Msk)) {
     NRF_RADIO->EVENTS_TXREADY = 0;
     if (cb_txready != NULL)
       cb_txready();
   }
-  if (NRF_RADIO->EVENTS_CRCOK == 1) {
+  if ((NRF_RADIO->EVENTS_CRCOK == 1) && (NRF_RADIO->INTENSET & RADIO_INTENSET_CRCOK_Msk)) {
     NRF_RADIO->EVENTS_CRCOK = 0;
     if (cb_crcok != NULL)
       cb_crcok();
   }
-  if (NRF_RADIO->EVENTS_CRCERROR == 1) {
+  if ((NRF_RADIO->EVENTS_CRCERROR == 1) && (NRF_RADIO->INTENSET & RADIO_INTENSET_CRCERROR_Msk)) {
     NRF_RADIO->EVENTS_CRCERROR = 0;
     if (cb_crcerr != NULL)
       cb_crcerr();
   }
-  if (NRF_RADIO->EVENTS_ADDRESS == 1) {
+  if ((NRF_RADIO->EVENTS_ADDRESS == 1) && (NRF_RADIO->INTENSET & RADIO_INTENSET_ADDRESS_Msk)) {
     NRF_RADIO->EVENTS_ADDRESS = 0;
     if (cb_address != NULL)
       cb_address();
   }
-  if (NRF_RADIO->EVENTS_END == 1) {
+  if ((NRF_RADIO->EVENTS_END == 1) && (NRF_RADIO->INTENSET & RADIO_INTENSET_END_Msk)) {
     NRF_RADIO->EVENTS_END = 0;
     if (cb_end != NULL)
       cb_end();

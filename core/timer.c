@@ -81,7 +81,7 @@ int timer_cb_unregister(timer_id_t timer) {
 
 // TIMER1 ISR
 void TIMER1_IRQHandler(void) {
-  if (NRF_TIMER1->EVENTS_COMPARE[0] == 1) {
+  if ((NRF_TIMER1->EVENTS_COMPARE[0] == 1) && (NRF_TIMER1->INTENSET & TIMER_INTENSET_COMPARE0_Msk)) {
     NRF_TIMER1->EVENTS_COMPARE[0] = 0;
     if (cb_timer1 != NULL)  // note: should always be true
       cb_timer1();
@@ -90,7 +90,7 @@ void TIMER1_IRQHandler(void) {
 
 // TIMER2 ISR
 void TIMER2_IRQHandler(void) {
-  if (NRF_TIMER2->EVENTS_COMPARE[0] == 1) {
+  if ((NRF_TIMER2->EVENTS_COMPARE[0] == 1) && (NRF_TIMER2->INTENSET & TIMER_INTENSET_COMPARE0_Msk)) {
     NRF_TIMER2->EVENTS_COMPARE[0] = 0;
     if (cb_timer2 != NULL)  // note: should always be true
       cb_timer2();
