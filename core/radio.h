@@ -63,4 +63,14 @@ void radio_start();
  */
 void radio_stop();
 
+/**
+ * @brief Waits until the radio stop is completed.
+ *
+ * Internally, this makes sure that the HFXO has stopped so the radio can be started again immediately afterwards.
+ *
+ *  Note: This methods blocks indefinitely until the HF clock is stopped, so use with care!
+ *
+ */
+void radio_wait_stop_complete();
+
 #endif /* __RADIO_H__ */

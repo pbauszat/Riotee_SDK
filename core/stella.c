@@ -213,8 +213,7 @@ static inline riotee_rc_t _transceive(riotee_stella_pkt_t *rx_pkt, riotee_stella
   pkt_counter++;
 
   /* Make sure HFXO has stopped so the next packet can be sent right after returning. */
-  while ((NRF_CLOCK->HFCLKSTAT & CLOCK_HFCLKSTAT_SRC_Msk) == CLOCK_HFCLKSTAT_SRC_Xtal) {
-  }
+  radio_wait_stop_complete();
 
   if (notification_value & EVT_RESET)
     return RIOTEE_ERR_RESET;

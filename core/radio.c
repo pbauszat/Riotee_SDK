@@ -40,6 +40,12 @@ void radio_stop() {
   NRF_CLOCK->TASKS_HFCLKSTOP = 1;
 }
 
+void radio_wait_stop_complete() {
+  // Make sure HFXO has stopped so the next packet can be sent right after returning
+  while ((NRF_CLOCK->HFCLKSTAT & CLOCK_HFCLKSTAT_SRC_Msk) == CLOCK_HFCLKSTAT_SRC_Xtal) {
+  }
+}
+
 int radio_cb_register(radio_evt_t evt, RADIO_CALLBACK cb) {
   switch (evt) {
     case RADIO_EVT_DISABLED:
