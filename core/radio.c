@@ -125,6 +125,17 @@ int radio_cb_unregister(radio_evt_t evt) {
   return 0;
 }
 
+void radio_cb_clear_all() {
+  NRF_RADIO->INTENCLR = 0xFFFFFFFF;
+  cb_disabled = NULL;
+  cb_txready = NULL;
+  cb_rxready = NULL;
+  cb_crcok = NULL;
+  cb_crcerr = NULL;
+  cb_address = NULL;
+  cb_end = NULL;
+}
+
 void RADIO_IRQHandler(void) {
   if ((NRF_RADIO->EVENTS_DISABLED == 1) && (NRF_RADIO->INTENSET & RADIO_INTENSET_DISABLED_Msk)) {
     NRF_RADIO->EVENTS_DISABLED = 0;

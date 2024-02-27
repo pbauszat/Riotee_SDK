@@ -28,23 +28,6 @@ typedef enum {
 } radio_init_mode_t;
 
 /**
- * @brief Registers a callback in the radio isr.
- *
- * @param evt Event for which callback is registered
- * @param cb Pointer to callback function
- * @return int
- */
-int radio_cb_register(radio_evt_t evt, RADIO_CALLBACK cb);
-
-/**
- * @brief Unregisters a previously registered callback.
- *
- * @param evt Event for which callback was registered.
- * @return int
- */
-int radio_cb_unregister(radio_evt_t evt);
-
-/**
  * @brief Initializes the radio peripheral. Must be called before radio can be used.
  *
  * @param mode The initial radio mode.
@@ -72,5 +55,28 @@ void radio_stop();
  *
  */
 void radio_wait_stop_complete();
+
+/**
+ * @brief Registers a callback in the radio isr.
+ *
+ * @param evt Event for which callback is registered
+ * @param cb Pointer to callback function
+ * @return int
+ */
+int radio_cb_register(radio_evt_t evt, RADIO_CALLBACK cb);
+
+/**
+ * @brief Unregisters a previously registered callback.
+ *
+ * @param evt Event for which callback was registered.
+ * @return int
+ */
+int radio_cb_unregister(radio_evt_t evt);
+
+/**
+ * @brief Unregisters all previously registered callback.
+ *
+ */
+void radio_cb_clear_all();
 
 #endif /* __RADIO_H__ */
