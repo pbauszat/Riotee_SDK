@@ -131,7 +131,7 @@ void riotee_stella_init() {
   /* Set the default device ID */
   riotee_stella_set_id(NRF_FICR->DEVICEADDR[0]);
 
-  radio_init(RADIO_INIT_MODE_TX);
+  radio_init();
   timer_init();
   timer_cb_register(TIMER_2, timer_callback);
 
@@ -159,8 +159,7 @@ static inline int wait_for_completion(riotee_stella_pkt_t *rx_pkt, riotee_stella
   pkt_counter++;
 
   /* Make sure HFXO has stopped so the next packet can be sent right after returning. */
-  while ((NRF_CLOCK->HFCLKSTAT & CLOCK_HFCLKSTAT_SRC_Msk) == CLOCK_HFCLKSTAT_SRC_Xtal) {
-  }
+  radio_wait_stop_complete();
 
   if (notification_value & EVT_RESET)
     return RIOTEE_ERR_RESET;
@@ -192,8 +191,8 @@ static inline riotee_rc_t _transceive(riotee_stella_pkt_t *rx_pkt, riotee_stella
   unsigned long notification_value;
 
   taskENTER_CRITICAL();
-  /* Packet transmission will start automatically when HFXO is running */
-  NRF_CLOCK->TASKS_HFCLKSTART = 1;
+  /* Start the radio in TX mode */
+  radio_start(RADIO_INIT_MODE_TX);
 
   NRF_RADIO->SHORTS |= RADIO_SHORTS_DISABLED_RXEN_Msk;
   NRF_RADIO->PACKETPTR = (uint32_t)tx_pkt;

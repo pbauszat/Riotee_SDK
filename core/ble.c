@@ -118,7 +118,7 @@ riotee_rc_t riotee_ble_advertise(riotee_adv_ch_t ch) {
   taskENTER_CRITICAL();
   set_channel(current_adv_ch_idx);
 
-  radio_start();
+  radio_start(RADIO_INIT_MODE_TX);
   xTaskNotifyStateClearIndexed(usr_task_handle, 1);
   ulTaskNotifyValueClearIndexed(usr_task_handle, 1, 0xFFFFFFFF);
 
@@ -195,5 +195,5 @@ void riotee_ble_init(void) {
 
   radio_cb_register(RADIO_EVT_DISABLED, radio_disabled_callback);
 
-  radio_init(RADIO_INIT_MODE_TX);
+  radio_init();
 }

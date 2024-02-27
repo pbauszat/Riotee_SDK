@@ -11,8 +11,15 @@ RADIO_CALLBACK cb_crcerr = NULL;
 RADIO_CALLBACK cb_address = NULL;
 RADIO_CALLBACK cb_end = NULL;
 
-void radio_init(radio_init_mode_t mode) {
-  // (1) Setup PPI channel between clock start and radio start-up
+void radio_init() {
+  // Clear all radio interrupts
+  NRF_RADIO->INTENCLR = 0xFFFFFFFF;
+  // Enable radio ISR
+  NVIC_EnableIRQ(RADIO_IRQn);
+}
+
+void radio_start(radio_init_mode_t mode) {
+  // Setup a PPI channel that connects the start event of the HF clock with the radio start-up
   NRF_PPI->CH[18].EEP = (uint32_t)&NRF_CLOCK->EVENTS_HFCLKSTARTED;
   if (mode == RADIO_INIT_MODE_RX) {
     NRF_PPI->CH[18].TEP = (uint32_t)&NRF_RADIO->TASKS_RXEN;
@@ -20,18 +27,9 @@ void radio_init(radio_init_mode_t mode) {
     // TX by default
     NRF_PPI->CH[18].TEP = (uint32_t)&NRF_RADIO->TASKS_TXEN;
   }
-
-  // (2) Enable channel to start radio transmissions as soon as HFCLK is running
   NRF_PPI->CHENSET = PPI_CHENSET_CH18_Msk;
 
-  // (3) Clear all radio interrupts
-  NRF_RADIO->INTENCLR = 0xFFFFFFFF;
-
-  // (4) Enable radio ISR
-  NVIC_EnableIRQ(RADIO_IRQn);
-}
-
-void radio_start() {
+  // Start the HF clock
   NRF_CLOCK->TASKS_HFCLKSTART = 1;
 }
 

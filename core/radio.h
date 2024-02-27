@@ -29,16 +29,15 @@ typedef enum {
 
 /**
  * @brief Initializes the radio peripheral. Must be called before radio can be used.
- *
- * @param mode The initial radio mode.
  */
-void radio_init(radio_init_mode_t mode);
+void radio_init();
 
 /**
  * @brief Starts the radio by starting the HFXO, which automatically starts the radio when its up.
  *
+ * @param mode The initial radio mode (RX or TX).
  */
-void radio_start();
+void radio_start(radio_init_mode_t mode);
 
 /**
  * @brief Stops the radio and disables the HFXO.
