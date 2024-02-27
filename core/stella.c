@@ -139,8 +139,6 @@ void riotee_stella_init() {
   radio_cb_register(RADIO_EVT_CRCERR, radio_crc_err);
   radio_cb_register(RADIO_EVT_RXREADY, radio_rxready);
   radio_cb_register(RADIO_EVT_TXREADY, radio_txready);
-
-  NRF_PPI->CHENSET = PPI_CHENSET_CH18_Msk;
 }
 
 static void teardown(void) {
