@@ -90,6 +90,9 @@ ifdef RIOTEE_USE_CPP17
 endif
 ifdef RIOTEE_USE_CPP20
   CPPFLAGS += -std=c++20
+  # removes "warning: compound assignment with 'volatile'-qualified left operand is deprecated" warnings caused by ARM core files
+  # related to: https://github.com/ARM-software/CMSIS_5/issues/1544
+  CPPFLAGS += -Wno-volatile
 endif
 
 
