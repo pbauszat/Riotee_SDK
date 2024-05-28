@@ -85,6 +85,13 @@ CFLAGS += -ffunction-sections
 CFLAGS += -fdata-sections
 
 CPPFLAGS = ${CFLAGS} -fno-exceptions
+ifdef RIOTEE_USE_CPP17
+  CPPFLAGS += -std=c++17
+endif
+ifdef RIOTEE_USE_CPP20
+  CPPFLAGS += -std=c++20
+endif
+
 
 ASMFLAGS += -g3
 ASMFLAGS += -mcpu=cortex-m4
