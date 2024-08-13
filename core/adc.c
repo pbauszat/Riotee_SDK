@@ -49,7 +49,7 @@ void SAADC_IRQHandler(void) {
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
   } else {
     NRF_SAADC->RESULT.PTR += 2;
-    NRF_RTC0->CC[2] = (NRF_RTC0->COUNTER + sample_interval_ticks32) % (1 << 24);
+    NRF_RTC0->CC[2] = (NRF_RTC0->CC[2] + sample_interval_ticks32) % (1 << 24);
   }
 }
 
@@ -126,6 +126,8 @@ riotee_rc_t riotee_adc_sample(int16_t *dst, riotee_adc_cfg_t *cfg) {
   if (cfg->input_neg != RIOTEE_ADC_INPUT_NC)
     NRF_SAADC->CH[0].CONFIG |= (SAADC_CH_CONFIG_MODE_Diff << SAADC_CH_CONFIG_MODE_Pos);
 
+  NRF_SAADC->CH[0].CONFIG |= (cfg->res_pos << SAADC_CH_CONFIG_RESP_Pos) | (cfg->res_neg << SAADC_CH_CONFIG_RESN_Pos);
+
   /* Take only one sample, manage buffer in software */
   NRF_SAADC->RESULT.PTR = (uint32_t)dst;
   NRF_SAADC->RESULT.MAXCNT = 1;
@@ -144,7 +146,6 @@ riotee_rc_t riotee_adc_sample(int16_t *dst, riotee_adc_cfg_t *cfg) {
     NRF_RTC0->CC[2] = (NRF_RTC0->COUNTER + cfg->sample_interval_ticks32) % (1 << 24);
     NRF_RTC0->EVTENSET = RTC_EVTEN_COMPARE2_Msk;
   }
-  NRF_SAADC->TASKS_START = 1;
 
   taskEXIT_CRITICAL();
 

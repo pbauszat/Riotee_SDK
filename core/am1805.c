@@ -4,8 +4,8 @@
 #include <string.h>
 
 #define TX_BUF_SIZE 64
-#define N_RETRIES 20
-#define RETRY_DELAY_MS 20
+#define N_RETRIES 40
+#define RETRY_DELAY_MS 50
 
 uint8_t tx_buf[TX_BUF_SIZE];
 
@@ -48,14 +48,6 @@ static int set_configuration_key(uint8_t key) {
   return write_register(AM1805_CONFIG_KEY_REG, key);
 }
 
-static int get_id(uint16_t* id) {
-  int rc;
-  if ((rc = read_registers((uint8_t*)id, 2, AM1805_ID0_REG)) != 0)
-    return rc;
-  return 0;
-}
-
-/* Waits until alarm register accepts data. Seems to be undocumented behavior of AM1805 */
 static int wait_for_alarm_ok() {
   uint8_t check;
   int retries = N_RETRIES;
@@ -70,12 +62,20 @@ static int wait_for_alarm_ok() {
   return -1;
 }
 
-int am1805_init(void) {
+/* Waits until alarm register accepts data. Seems to be undocumented behavior of AM1805 */
+int riotee_am1805_get_id(uint16_t* id) {
+  int rc;
+  if ((rc = read_registers((uint8_t*)id, 2, AM1805_ID0_REG)) != 0)
+    return rc;
+  return 0;
+}
+
+int riotee_am1805_init(void) {
   uint16_t id;
   int retries = N_RETRIES;
   do {
     retries--;
-    if (get_id(&id) == 0)
+    if (riotee_am1805_get_id(&id) == 0)
       if (id == 0x0518) {
         return 0;
       }
@@ -84,20 +84,22 @@ int am1805_init(void) {
   return -1;
 }
 
-int am1805_enable_trickle(void) {
+int riotee_am1805_enable_trickle(void) {
+  int rc;
   /* Sets lowest thresholds for VBAT */
-  set_configuration_key(AM1805_CONFIG_KEY_OTHERS);
-  write_register(AM1805_BREF_CONTROL_REG, 0xF0);
+  if ((rc = set_configuration_key(AM1805_CONFIG_KEY_OTHERS)) != 0)
+    return rc;
+  if ((rc = write_register(AM1805_BREF_CONTROL_REG, 0xF0)) != 0)
+    return rc;
 
   /* Enable trickle charging of capacitors on VBAT */
-  set_configuration_key(AM1805_CONFIG_KEY_OTHERS);
-  write_register(AM1805_TRICKLE_REG,
-                 AM1805_TRICKLE_REG_TCS_MSK | AM1805_TRICKLE_REG_DIODE_SCHOTTKY_MSK | AM1805_TRICKLE_REG_ROUT_6K_MSK);
-
-  return 0;
+  if ((rc = set_configuration_key(AM1805_CONFIG_KEY_OTHERS)) != 0)
+    return rc;
+  return write_register(AM1805_TRICKLE_REG, AM1805_TRICKLE_REG_TCS_MSK | AM1805_TRICKLE_REG_DIODE_SCHOTTKY_MSK |
+                                                AM1805_TRICKLE_REG_ROUT_6K_MSK);
 }
 
-int am1805_get_datetime(struct tm* t) {
+int riotee_am1805_get_datetime(struct tm* t) {
   uint8_t rx_buf[7];
   memset(t, 0, sizeof(t));
 
@@ -115,7 +117,7 @@ int am1805_get_datetime(struct tm* t) {
   return 0;
 }
 
-int am1805_set_datetime(struct tm* t) {
+int riotee_am1805_set_datetime(struct tm* t) {
   uint8_t time_buf[7];
   time_buf[0] = dec2hex(t->tm_sec);
   time_buf[1] = dec2hex(t->tm_min);
@@ -128,7 +130,7 @@ int am1805_set_datetime(struct tm* t) {
   return write_registers(AM1805_SECOND_REG, time_buf, sizeof(time_buf));
 }
 
-int am1805_get_hundredths(unsigned int* hundredths) {
+int riotee_am1805_get_hundredths(unsigned int* hundredths) {
   int rc;
   uint8_t rx_buf;
   if ((rc = read_register(&rx_buf, AM1805_HUNDRETH_REG)) != 0)
@@ -137,7 +139,7 @@ int am1805_get_hundredths(unsigned int* hundredths) {
   return 0;
 }
 
-int am1805_get_alarm(struct tm* t) {
+int riotee_am1805_get_alarm(struct tm* t) {
   uint8_t rx_buf[6];
   memset(t, 0, sizeof(t));
 
@@ -153,12 +155,12 @@ int am1805_get_alarm(struct tm* t) {
   return 0;
 }
 
-int am1805_reset(void) {
+int riotee_am1805_reset(void) {
   set_configuration_key(AM1805_CONFIG_KEY_RESET);
   return 0;
 }
 
-int am1805_set_alarm(struct tm* t_alarm) {
+int riotee_am1805_set_alarm(struct tm* t_alarm) {
   int rc;
   uint8_t time_buf[5];
 
@@ -180,11 +182,20 @@ int am1805_set_alarm(struct tm* t_alarm) {
   return 0;
 }
 
-int am1805_get_status(uint8_t* dst) {
+int riotee_am1805_clear_alarm() {
+  int rc;
+  uint8_t status;
+  if ((rc = riotee_am1805_get_status(&status)) != 0)
+    return rc;
+  status &= ~AM1805_STATUS_ALM_MSK;
+  return write_register(AM1805_STATUS_REG, status);
+}
+
+int riotee_am1805_get_status(uint8_t* dst) {
   return read_register(dst, AM1805_STATUS_REG);
 }
 
-int am1805_disable_power(void) {
+int riotee_am1805_disable_power(void) {
   uint8_t readback;
   write_register(AM1805_CONTROL1_REG, AM1805_CONTROL1_PWR2_MSK);
   write_register(AM1805_CONTROL2_REG, AM1805_CONTROL2_OUT2S_SLEEP_MSK);

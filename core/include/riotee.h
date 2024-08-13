@@ -1,6 +1,8 @@
 #ifndef __RIOTEE_H_
 #define __RIOTEE_H_
 
+#include "nrf.h"
+
 #define PIN_SYS_SCL 40
 #define PIN_SYS_SDA 6
 
@@ -87,7 +89,7 @@ extern "C" {
  * possible.
  *
  */
-void startup_callback(void);
+void earlyinit(void);
 
 /**
  * @brief User-provided bootstrap callback.
@@ -95,11 +97,11 @@ void startup_callback(void);
  * \ingroup riotee
  *
  * This callback is called once at the first reset after programming the device. It is called right before the first
- * reset_callback. Use this callback to do any one-time initilization like setting an RTC or writing configuration to
+ * lateinit. Use this callback to do any one-time initilization like setting an RTC or writing configuration to
  * the NVM.
  *
  */
-void bootstrap_callback(void);
+void bootstrap(void);
 
 /**
  * @brief User-provided reset callback.
@@ -109,7 +111,7 @@ void bootstrap_callback(void);
  * This callback is called after every reset of the device. Use this callback to initializer peripherals and drivers.
  *
  */
-void reset_callback(void);
+void lateinit(void);
 
 /**
  * @brief User-provided suspend callback.
@@ -119,7 +121,7 @@ void reset_callback(void);
  * This callback is called when the capacitor voltage drops below a threshold. If your application uses power-hungry
  * peripherals, power them off immediately in this callback. Keep the callback as short as possible.
  */
-void suspend_callback(void);
+void suspend(void);
 
 /**
  * @brief User-provided resume callback.
@@ -128,7 +130,7 @@ void suspend_callback(void);
  *
  * This callback is called when the capacitor voltage has recovered and the application resumes.
  */
-void resume_callback(void);
+void resume(void);
 
 /**
  * @brief Waits until the capacitor is charged.
@@ -142,6 +144,29 @@ void resume_callback(void);
  * @retval RIOTEE_ERR_RESET     Reset occured while waiting.
  */
 riotee_rc_t riotee_wait_cap_charged(void);
+
+/**
+ * @brief Stores a snapshot of the application state to non-volatile memory
+ *
+ * \ingroup riotee
+ *
+ * Requests the runtime to checkpoint application state to non-volatile memory. User should only call this when
+ * capacitor is sufficiently charged.
+ *
+ */
+void riotee_checkpoint();
+
+/**
+ * @brief Enter low power mode
+ *
+ * Puts the CPU to low power mode, Execution stops until CPU is woken up by an event.
+ *
+ */
+__attribute__((always_inline)) static inline void enter_low_power(void) {
+  __WFE();
+  __SEV();
+  __WFE();
+}
 
 /** Data is set to initial value after every reset. */
 #define __NONRETAINED_INITIALIZED__ __attribute__((section(".volatile_data")))

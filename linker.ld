@@ -10,14 +10,14 @@ EXTERN(vectors)
 RAM_SIZE = 131072;
 RAM_ORIGIN = 0x20000000;
 
-RAM_VOLATILE_ORIGIN = RAM_ORIGIN;
+RAM_RETAINED_ORIGIN = RAM_ORIGIN;
 RAM_VOLATILE_SIZE = RAM_SIZE - RIOTEE_RAM_RETAINED_SIZE;
-RAM_RETAINED_ORIGIN = RAM_ORIGIN + RAM_VOLATILE_SIZE;
+RAM_VOLATILE_ORIGIN = RAM_ORIGIN + RIOTEE_RAM_RETAINED_SIZE;
 
 MEMORY {
   FLASH (rx) : ORIGIN = 0x0, LENGTH = 512k
-  RAM_VOLATILE (rwx) :  ORIGIN = RAM_VOLATILE_ORIGIN, LENGTH = RAM_VOLATILE_SIZE
   RAM_RETAINED (rwx) :  ORIGIN = RAM_RETAINED_ORIGIN, LENGTH = RIOTEE_RAM_RETAINED_SIZE
+  RAM_VOLATILE (rwx) :  ORIGIN = RAM_VOLATILE_ORIGIN, LENGTH = RAM_VOLATILE_SIZE
 }
 
 
@@ -77,6 +77,8 @@ SECTIONS {
                 *stella.c.o(.data .data.*)
                 *shtc.c.o(.data .data.*)
                 *spic.c.o(.data .data.*)
+                *i2c.c.o(.data .data.*)
+                *timing.c.o(.data .data.*)
                 *adc.c.o(.data .data.*)
                 *nvm.c.o(.data .data.*)
                 *bma400.c.o(.data .data.*)
@@ -134,6 +136,8 @@ SECTIONS {
                 *stella.c.o(.bss .bss.*)
                 *shtc.c.o(.bss .bss.*)
                 *spic.c.o(.bss .bss.*)
+                *i2c.c.o(.bss .bss.*)
+                *timing.c.o(.bss .bss.*)
                 *adc.c.o(.bss .bss.*)
                 *nvm.c.o(.bss .bss.*)
                 *bma400.c.o(.bss .bss.*)
